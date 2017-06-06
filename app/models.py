@@ -1,10 +1,16 @@
 # coding=utf-8
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
+from flask_login import LoginManager
 
 db = SQLAlchemy()
 
-class User(db.Model):
+login_manager = LoginManager()
+login_manager.session_protection = 'strong'
+login_manager.login_view = 'router'
+
+class User(UserMixin, db.Model):
     """用户"""
     __tablename__ = 'users'
 
@@ -31,3 +37,12 @@ class User(db.Model):
             'id': self.id,
             'nickname': self.nickname,
         }
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
+
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    return 'you must login first'
