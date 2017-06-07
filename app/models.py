@@ -17,6 +17,11 @@ class User(UserMixin, db.Model):
     id = db.Column(db.String(11), doc='手机号码', primary_key=True)
     nickname = db.Column(db.String(20), doc='昵称', default='微聊用户', nullable=False)
     password_hash = db.Column(db.String(128), doc='密码散列值', nullable=False)
+    mini_number = db.Column(db.String(20), doc='mini号', nullable=False)
+    sex = db.Column(db.String(10), doc='性别', default='未知', nullable=False)
+    city = db.Column(db.String(40), doc='城市', nullable=False)
+    signature = db.Column(db.String(30), doc='个性签名')
+
     
     def __repr__(self):
         return '%s <%s>' % (self.nickname, self.id)
@@ -36,6 +41,10 @@ class User(UserMixin, db.Model):
         return {
             'id': self.id,
             'nickname': self.nickname,
+            'mini_number': self.mini_number,
+            'sex': self.sex,
+            'city': self.city,
+            'signature': self.signature
         }
 
 @login_manager.user_loader

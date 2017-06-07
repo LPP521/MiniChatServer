@@ -1,16 +1,27 @@
-from flask import Blueprint
+# coding=utf-8
+from flask import Blueprint, request
 from models import db, User
 from flask_login import login_required
 from flask_login import login_user, logout_user
 
 main = Blueprint('main', __name__)
 
-@main.route('/regesiter/<id>/<username>/<password>')
-def regesiter(id, username, password):
-    user = User(id=id, nickname=username, password=password)
+@main.route('/register', methods=['GET', 'POST'])
+def regesiter():
+    findUser = User.query.filter_by(id=request.form['phone']).first()
+    if findUser:
+        return '手机号已被注册'
+    user = User()
+    user.id = request.form['phone']
+    user.nickname = request.form['nickname']
+    user.password = request.form['password']
+    user.mini_number = request.form['mini_number']
+    user.sex = request.form['sex']
+    user.city = request.form['city']
+    user.signature = request.form['signature']
     db.session.add(user)
     db.session.commit()
-    return 'User %s' % username
+    return u'注册成功， User %s' % user.nickname
 
 @main.route('/login/<id>/<password>')
 def login(id, password):
