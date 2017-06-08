@@ -2,7 +2,7 @@
 from flask import Blueprint, request
 from models import db, User
 from flask_login import login_required
-from flask_login import login_user, logout_user
+from flask_login import login_user, logout_user, current_user
 
 main = Blueprint('main', __name__)
 
@@ -43,3 +43,20 @@ def logout():
 def secret(id):
     user = User.query.filter_by(id=id).first()
     return 'User %s' % user.nickname
+
+@main.route('/updateUser/<id>', methods=['GET', 'POST'])
+@login_required
+def updateUser(id):
+    user = User.query.filter_by(id=id).first()
+    if user and current_user == user:
+        user.nickname = request.form['nickname']
+        user.password = request.form['password']
+        user.mini_number = request.form['mini_number']
+        user.sex = request.form['sex']
+        user.city = request.form['city']
+        user.signature = request.form['signature']
+        db.session.add(user)
+        db.session.commit()
+        return u'更新成功， User %s' % user.nickname
+    else:   
+        return u'用户不存在'
