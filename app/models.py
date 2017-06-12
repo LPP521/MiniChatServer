@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from flask_login import LoginManager
 
-db = SQLAlchemy()
+db = SQLAlchemy(use_native_unicode="utf8")
 
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'
@@ -17,10 +17,9 @@ class User(UserMixin, db.Model):
     id = db.Column(db.String(11), doc='手机号码', primary_key=True)
     nickname = db.Column(db.String(20), doc='昵称', default='微聊用户', nullable=False)
     password_hash = db.Column(db.String(128), doc='密码散列值', nullable=False)
-    mini_number = db.Column(db.String(20), doc='mini号', nullable=False)
     sex = db.Column(db.String(10), doc='性别', default='未知', nullable=False)
-    city = db.Column(db.String(40), doc='城市', nullable=False)
-    signature = db.Column(db.String(30), doc='个性签名')
+    city = db.Column(db.String(40), doc='城市', default='未知', nullable=False)
+    signature = db.Column(db.String(30), default='什么都没留下', doc='个性签名')
 
     
     def __repr__(self):
@@ -37,11 +36,10 @@ class User(UserMixin, db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def __json__(self):
+    def to_json(self):
         return {
             'id': self.id,
             'nickname': self.nickname,
-            'mini_number': self.mini_number,
             'sex': self.sex,
             'city': self.city,
             'signature': self.signature

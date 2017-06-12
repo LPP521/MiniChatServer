@@ -1,5 +1,6 @@
 # coding=utf-8
-from flask import Blueprint, request
+import json
+from flask import Blueprint, request, jsonify
 from models import db, User
 from flask_login import login_required
 from flask_login import login_user, logout_user, current_user
@@ -15,10 +16,6 @@ def regesiter():
     user.id = request.form['phone']
     user.nickname = request.form['nickname']
     user.password = request.form['password']
-    user.mini_number = request.form['mini_number']
-    user.sex = request.form['sex']
-    user.city = request.form['city']
-    user.signature = request.form['signature']
     db.session.add(user)
     db.session.commit()
     return u'注册成功， User %s' % user.nickname
@@ -28,7 +25,7 @@ def login(id, password):
     user = User.query.filter_by(id=id).first()
     if user.verify_password(password):
         login_user(user)
-        return 'User %s' % user.nickname
+        return jsonify(user.to_json())
     else:
         return 'wrong password'
 
