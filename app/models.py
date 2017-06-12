@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from flask_login import LoginManager
+from flask import jsonify
 
 db = SQLAlchemy(use_native_unicode="utf8")
 
@@ -17,8 +18,8 @@ class User(UserMixin, db.Model):
     id = db.Column(db.String(11), doc='手机号码', primary_key=True)
     nickname = db.Column(db.String(20), doc='昵称', default='微聊用户', nullable=False)
     password_hash = db.Column(db.String(128), doc='密码散列值', nullable=False)
-    sex = db.Column(db.String(10), doc='性别', default='未知', nullable=False)
-    city = db.Column(db.String(40), doc='城市', default='未知', nullable=False)
+    sex = db.Column(db.String(5), doc='性别', default='未知', nullable=False)
+    city = db.Column(db.String(10), doc='城市', default='未知城市', nullable=False)
     signature = db.Column(db.String(30), default='什么都没留下', doc='个性签名')
 
     
@@ -52,4 +53,4 @@ def load_user(user_id):
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    return 'you must login first'
+    return jsonify({'code': 3, 'message': '需要先登录才能进行该操作'})

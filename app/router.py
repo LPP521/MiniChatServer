@@ -11,49 +11,55 @@ main = Blueprint('main', __name__)
 def regesiter():
     findUser = User.query.filter_by(id=request.form['phone']).first()
     if findUser:
-        return '手机号已被注册'
+        jsonify({'code': 1, 'message': '邮箱已被注册'})
     user = User()
     user.id = request.form['phone']
     user.nickname = request.form['nickname']
     user.password = request.form['password']
     db.session.add(user)
     db.session.commit()
-    return u'注册成功， User %s' % user.nickname
+    return jsonify({'code': 0, 'message': '注册成功'})
 
 @main.route('/login/<id>/<password>')
 def login(id, password):
     user = User.query.filter_by(id=id).first()
-    if user.verify_password(password):
+    if user and user.verify_password(password):
         login_user(user)
-        return jsonify(user.to_json())
+        return jsonify({'code': 0, 'message': '登录成功'})
     else:
-        return 'wrong password'
+        return jsonify({'code': 2, 'message': '用户名或密码错误'})
 
 @main.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return 'You have been logged out.'
+    return jsonify({'code': 0, 'message': '登出成功'})
 
-@main.route('/secret/<id>')
-@login_required
-def secret(id):
-    user = User.query.filter_by(id=id).first()
-    return 'User %s' % user.nickname
 
-@main.route('/updateUser/<id>', methods=['GET', 'POST'])
+@main.route('/updateUser', methods=['GET', 'POST'])
 @login_required
-def updateUser(id):
-    user = User.query.filter_by(id=id).first()
-    if user and current_user == user:
-        user.nickname = request.form['nickname']
-        user.password = request.form['password']
-        user.mini_number = request.form['mini_number']
-        user.sex = request.form['sex']
-        user.city = request.form['city']
-        user.signature = request.form['signature']
-        db.session.add(user)
-        db.session.commit()
-        return u'更新成功， User %s' % user.nickname
-    else:   
-        return u'用户不存在'
+def updateUser():
+    form = request.form
+    nickname = form.get('nickname', '').strip()
+    if nickname != '':
+        current_user.nickname = nickname
+
+    password = form.get('password', '').strip()
+    if password != '':
+        current_user.password = password
+
+    sex = form.get('sex', '').strip()
+    if sex != '':
+        current_user.sex = sex        
+
+    city = form.get('city', '').strip()
+    if city != '':
+        current_user.city = city      
+
+    signature = form.get('signature', '').strip()
+    if signature != '':
+        current_user.signature = signature      
+
+    db.session.add(current_user)
+    db.session.commit()
+    return jsonify({'code': 0, 'message': '修改成功'})
