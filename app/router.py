@@ -7,7 +7,7 @@ from flask_login import login_user, logout_user, current_user
 
 main = Blueprint('main', __name__)
 
-@main.route('/register', methods=['GET', 'POST'])
+@main.route('/register', methods=['POST'])
 def regesiter():
     findUser = User.query.filter_by(id=request.form['phone']).first()
     if findUser:
@@ -20,8 +20,10 @@ def regesiter():
     db.session.commit()
     return jsonify({'code': 0, 'message': '注册成功'})
 
-@main.route('/login/<id>/<password>')
-def login(id, password):
+@main.route('/login', methods=['POST'])
+def login():
+    id = request.form['phone']
+    password = request.form['password']
     user = User.query.filter_by(id=id).first()
     if user and user.verify_password(password):
         login_user(user)
@@ -36,7 +38,7 @@ def logout():
     return jsonify({'code': 0, 'message': '登出成功'})
 
 
-@main.route('/updateUser', methods=['GET', 'POST'])
+@main.route('/updateUser', methods=['POST'])
 @login_required
 def updateUser():
     form = request.form
