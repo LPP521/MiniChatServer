@@ -34,4 +34,22 @@ MiniChat 服务器的接口
         - sex: 性别
         - city：地区
         - signature：个性签名
+        - avatar: 用户头像
+
+5. 获取用户信息（`"/getUserInfo", method="POST"`）, 只有已登录用户才能进行该操作
+    * 参数：无
+    * 返回值
+    ```
+    {
+        code: 0,
+        message: {
+            avatar: "/static/image/head.png",
+            city: "未知城市",
+            id: "12345678910",
+            nickname: "caitzh",
+            sex: "未知",
+            signature: "什么都没留下"
+        }
+    }
+    ```
     
