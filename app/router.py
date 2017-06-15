@@ -1,6 +1,6 @@
 # coding=utf-8
 import json
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from models import db, User
 from flask_login import login_required
 from flask_login import login_user, logout_user, current_user
@@ -11,7 +11,7 @@ main = Blueprint('main', __name__)
 def regesiter():
     findUser = User.query.filter_by(id=request.form['phone']).first()
     if findUser:
-        jsonify({'code': 1, 'message': '邮箱已被注册'})
+        return jsonify({'code': 1, 'message': '邮箱已被注册'})
     user = User()
     user.id = request.form['phone']
     user.nickname = request.form['nickname']
@@ -62,6 +62,19 @@ def updateUser():
     if signature != '':
         current_user.signature = signature      
 
+    avatar = request.files.get('avatar', None)
+    if avatar:
+        filename = avatar.filename
+        filename = "%s%s" % (current_user.id, filename[filename.rindex('.'):])
+        url = '%s/image/%s' % (current_app.static_folder, filename)
+        current_user.avatar = filename
+        avatar.save(url)
+
     db.session.add(current_user)
     db.session.commit()
     return jsonify({'code': 0, 'message': '修改成功'})
+
+@main.route('/getUserInfo', methods=['GET'])
+@login_required
+def getUserInfo():
+    return jsonify({'code': 0, 'message': current_user.to_json()})

@@ -21,6 +21,7 @@ class User(UserMixin, db.Model):
     sex = db.Column(db.String(5), doc='性别', default='未知', nullable=False)
     city = db.Column(db.String(10), doc='城市', default='未知城市', nullable=False)
     signature = db.Column(db.String(30), default='什么都没留下', doc='个性签名')
+    avatar = db.Column(db.String(50), default='head.png', doc='用户头像', nullable=False)
 
     
     def __repr__(self):
@@ -43,7 +44,8 @@ class User(UserMixin, db.Model):
             'nickname': self.nickname,
             'sex': self.sex,
             'city': self.city,
-            'signature': self.signature
+            'signature': self.signature,
+            'avatar': '/static/image/' + self.avatar
         }
 
 @login_manager.user_loader
