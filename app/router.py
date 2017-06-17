@@ -28,8 +28,10 @@ def login():
     if user and user.verify_password(password):
         login_user(user)
         return jsonify({'code': 0, 'message': '登录成功'})
+    elif user:
+        return jsonify({'code': 2, 'message': '密码错误'})
     else:
-        return jsonify({'code': 2, 'message': '用户名或密码错误'})
+        return jsonify({'code': 2, 'message': '账号不存在'})
 
 @main.route('/logout')
 @login_required
@@ -78,3 +80,11 @@ def updateUser():
 @login_required
 def getUserInfo():
     return jsonify({'code': 0, 'message': current_user.to_json()})
+
+@main.route('/query/<id>')
+def queryById(id):
+    user = User.query.filter_by(id=id).first()
+    if user:
+        return jsonify({'code': 0, 'message': user.to_json()})
+    else:
+        return jsonify({'code': 4, 'message': '该用户不存在'})
