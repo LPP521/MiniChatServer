@@ -1,19 +1,33 @@
 # coding=utf-8
-import json
+import json, re, random
 from flask import Blueprint, request, jsonify, current_app
-from models import db, User
+from models import db, User, verifyCode
 from flask_login import login_required
 from flask_login import login_user, logout_user, current_user
+import myemail
 
 main = Blueprint('main', __name__)
+verify_Code = []
 
 @main.route('/register', methods=['POST'])
 def regesiter():
-    findUser = User.query.filter_by(id=request.form['phone']).first()
+    email = request.form['id']
+    findUser = User.query.filter_by(id=email).first()
     if findUser:
         return jsonify({'code': 1, 'message': '邮箱已被注册'})
+
+    code = request.form['code']
+    isCodeValid = False
+    for c in verify_Code:
+        if c.verify(email, code):
+            isCodeValid = True
+        elif c.outOfDate():
+            verify_Code.remove(c)
+    if not isCodeValid:
+        return jsonify({'code': 1, 'message': '验证码已失效'})
+    
     user = User()
-    user.id = request.form['phone']
+    user.id = request.form['id']
     user.nickname = request.form['nickname']
     user.password = request.form['password']
     db.session.add(user)
@@ -22,7 +36,7 @@ def regesiter():
 
 @main.route('/login', methods=['POST'])
 def login():
-    id = request.form['phone']
+    id = request.form['id']
     password = request.form['password']
     user = User.query.filter_by(id=id).first()
     if user and user.verify_password(password):
@@ -88,3 +102,17 @@ def queryById(id):
         return jsonify({'code': 0, 'message': user.to_json()})
     else:
         return jsonify({'code': 4, 'message': '该用户不存在'})
+
+@main.route('/getVerifycode/<id>')
+def sendVerifycode(id):
+    if not re.match("[a-zA-Z0-9]+\@+[a-zA-Z0-9]+\.+[a-zA-Z]", id) != None:
+        return jsonify({'code': 5, 'message': '邮箱格式非法'})
+    code = random.randint(1000, 9999)
+    verify_Code.append(verifyCode(id, str(code)))
+    message = "[微聊]您的验证码是%s, 10分钟内有效。为了您的信息安全，请勿泄露验证码" %str(code)
+    if myemail.send(id, message):
+        return jsonify({'code': 0, 'message': '验证码发送成功'})
+    else:
+        return jsonify({'code': 6, 'message': '发送失败，请稍后再试'})
+
+

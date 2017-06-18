@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from flask_login import LoginManager
 from flask import jsonify
+import time
 
 db = SQLAlchemy(use_native_unicode="utf8")
 
@@ -15,7 +16,7 @@ class User(UserMixin, db.Model):
     """用户"""
     __tablename__ = 'users'
 
-    id = db.Column(db.String(11), doc='手机号码', primary_key=True)
+    id = db.Column(db.String(20), doc='手机号码', primary_key=True)
     nickname = db.Column(db.String(20), doc='昵称', default='微聊用户', nullable=False)
     password_hash = db.Column(db.String(128), doc='密码散列值', nullable=False)
     sex = db.Column(db.String(5), doc='性别', default='未知', nullable=False)
@@ -56,3 +57,19 @@ def load_user(user_id):
 @login_manager.unauthorized_handler
 def unauthorized():
     return jsonify({'code': 3, 'message': '需要先登录才能进行该操作'})
+
+# 验证码
+class verifyCode(object):
+    def __init__(self, email, code):
+        self.email = email
+        self.time = time.time()
+        self.code = code
+
+    def verify(self, email, code):
+        if code == self.code and email == self.email and not self.outOfDate():
+            return True
+        else:
+            return False
+
+    def outOfDate(self):
+        return time.time() - self.time > 120
