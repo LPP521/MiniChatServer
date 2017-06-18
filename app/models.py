@@ -72,4 +72,4 @@ class verifyCode(object):
             return False
 
     def outOfDate(self):
-        return time.time() - self.time > 120
+        return time.time() - self.time > 600

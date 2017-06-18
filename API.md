@@ -15,13 +15,14 @@ MiniChat 服务器的接口
 ## 用户
 1. 注册（`"/register", method="POST"`）
     * 参数
-        - phone: 手机号
+        - id: 邮箱
         - nickname： 昵称
         - password： 密码
+        - code: 验证码
 
 2. 登录（`"/login", method="POST"`）
     * 参数
-        - phone: 手机号
+        - id: 邮箱
         - password： 密码
 
 3. 登出（`"/logout", method="GET"`），只有已登录用户才能进行该操作 
@@ -52,4 +53,10 @@ MiniChat 服务器的接口
         }
     }
     ```
+
+6. 获取验证码（`"/getVerifycode/<id>", method=["GET"]`）
+    * 参数： id（邮箱）
+
+7. 根据`id`查询用户（`"/query/<id>", method=["GET"]`）
+    * 参数： id（邮箱）
     
