@@ -16,13 +16,15 @@ class User(UserMixin, db.Model):
     """用户"""
     __tablename__ = 'users'
 
-    id = db.Column(db.String(20), doc='手机号码', primary_key=True)
+    id = db.Column(db.String(20), doc='邮箱', primary_key=True)
     nickname = db.Column(db.String(20), doc='昵称', default='微聊用户', nullable=False)
     password_hash = db.Column(db.String(128), doc='密码散列值', nullable=False)
     sex = db.Column(db.String(5), doc='性别', default='未知', nullable=False)
     city = db.Column(db.String(10), doc='城市', default='未知城市', nullable=False)
     signature = db.Column(db.String(30), default='什么都没留下', doc='个性签名')
     avatar = db.Column(db.String(50), default='head.png', doc='用户头像', nullable=False)
+
+    friends = db.relationship('Friend', foreign_keys="Friend.one", lazy='dynamic', cascade='all, delete-orphan')
 
     
     def __repr__(self):
@@ -38,6 +40,13 @@ class User(UserMixin, db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def add_friend(self, friend):
+        positive = Friend(one=self.id, other=friend)
+        negative = Friend(one=friend, other=self.id)
+        db.session.add(positive)
+        db.session.add(negative)
+        db.session.commit()
 
     def to_json(self):
         return {
@@ -57,6 +66,11 @@ def load_user(user_id):
 @login_manager.unauthorized_handler
 def unauthorized():
     return jsonify({'code': 3, 'message': '需要先登录才能进行该操作'})
+
+class Friend(db.Model):
+    __tablename__ = "friends"
+    one = db.Column(db.String(20), db.ForeignKey(User.id), primary_key=True)
+    other = db.Column(db.String(20), db.ForeignKey(User.id), primary_key=True)
 
 # 验证码
 class verifyCode(object):

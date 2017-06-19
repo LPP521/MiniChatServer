@@ -1,7 +1,7 @@
 # coding=utf-8
 import json, re, random
 from flask import Blueprint, request, jsonify, current_app
-from models import db, User, verifyCode
+from models import db, User, Friend, verifyCode
 from flask_login import login_required
 from flask_login import login_user, logout_user, current_user
 import myemail
@@ -115,4 +115,23 @@ def sendVerifycode(id):
     else:
         return jsonify({'code': 6, 'message': '发送失败，请稍后再试'})
 
+@main.route('/addFriend', methods=['POST'])
+@login_required
+def queryTest():
+    friend = request.form['friend']
+    if friend == current_user.id:
+        return jsonify({'code': 7, 'message': '不能和自己成为好友'})
+    if Friend.query.filter_by(one=friend).first():
+        return jsonify({'code': 8, 'message': '不能重复添加好友'})
+    user = User.query.filter_by(id=friend).first()   
+    if user:
+        current_user.add_friend(friend)
+        return jsonify({'code': 0, 'message': '成功添加好友'})
+    else:
+        return jsonify({'code': 9, 'message': '添加的好友不存在'})
 
+@main.route('/getFrineds')
+@login_required
+def getFrineds():
+    friends = User.query.filter(User.id.in_([f.other for f in current_user.friends])).all()
+    return jsonify({'code': 0, 'message': [f.to_json() for f in friends]})
