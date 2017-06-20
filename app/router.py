@@ -1,7 +1,7 @@
 # coding=utf-8
 import json, re, random
 from flask import Blueprint, request, jsonify, current_app
-from models import db, User, Friend, verifyCode
+from models import db, User, Friend, VerifyCode
 from flask_login import login_required
 from flask_login import login_user, logout_user, current_user
 import myemail
@@ -108,7 +108,7 @@ def sendVerifycode(id):
     if not re.match("[a-zA-Z0-9]+\@+[a-zA-Z0-9]+\.+[a-zA-Z]", id) != None:
         return jsonify({'code': 5, 'message': '邮箱格式非法'})
     code = random.randint(1000, 9999)
-    verify_Code.append(verifyCode(id, str(code)))
+    verify_Code.append(VerifyCode(id, str(code)))
     message = "[微聊]您的验证码是%s, 10分钟内有效。为了您的信息安全，请勿泄露验证码" %str(code)
     if myemail.send(id, message):
         return jsonify({'code': 0, 'message': '验证码发送成功'})
