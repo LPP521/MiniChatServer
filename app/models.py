@@ -73,7 +73,7 @@ class Friend(db.Model):
     other = db.Column(db.String(20), db.ForeignKey(User.id), primary_key=True)
 
 # 验证码
-class verifyCode(object):
+class VerifyCode(object):
     def __init__(self, email, code):
         self.email = email
         self.time = time.time()
