@@ -57,6 +57,11 @@ MiniChat 服务器的接口
 6. 获取验证码（`"/getVerifycode/<id>", method=["GET"]`）
     * 参数： id（邮箱）
 
+7. 检查验证码是否正确（`"/verifyCode", method=["POST"]`）
+    * 参数： 
+        - id： 邮箱
+        - code： 验证码
+
 7. 根据`id`查询用户（`"/query/<id>", method=["GET"]`）
     * 参数： id（邮箱）
     

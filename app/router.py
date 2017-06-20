@@ -115,6 +115,24 @@ def sendVerifycode(id):
     else:
         return jsonify({'code': 6, 'message': '发送失败，请稍后再试'})
 
+@main.route('/verifyCode', methods=['POST'])
+def verifyCode():
+    email = request.form['id']
+    findUser = User.query.filter_by(id=email).first()
+    if not findUser:
+        return jsonify({'code': 10, 'message': '该邮箱尚未注册'})
+
+    code = request.form['code']
+    isCodeValid = False
+    for c in verify_Code:
+        if c.verify(email, code):
+            isCodeValid = True
+        elif c.outOfDate():
+            verify_Code.remove(c)
+    if not isCodeValid:
+        return jsonify({'code': 11, 'message': '验证码不正确'})
+    return jsonify({'code': 0, 'message': '验证码正确'})
+
 @main.route('/addFriend', methods=['POST'])
 @login_required
 def queryTest():
