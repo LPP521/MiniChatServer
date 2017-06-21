@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from flask_login import LoginManager
 from flask import jsonify
-import time
+import time, datetime
 
 db = SQLAlchemy(use_native_unicode="utf8")
 
@@ -23,6 +23,7 @@ class User(UserMixin, db.Model):
     city = db.Column(db.String(10), doc='城市', default='未知城市', nullable=False)
     signature = db.Column(db.String(30), default='什么都没留下', doc='个性签名')
     avatar = db.Column(db.String(50), default='head.png', doc='用户头像', nullable=False)
+    timestamp = db.Column(db.String(25), default=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), doc='时间戳', nullable=False)
 
     friends = db.relationship('Friend', foreign_keys="Friend.one", lazy='dynamic', cascade='all, delete-orphan')
 
@@ -55,7 +56,8 @@ class User(UserMixin, db.Model):
             'sex': self.sex,
             'city': self.city,
             'signature': self.signature,
-            'avatar': '/static/image/' + self.avatar
+            'avatar': '/static/image/' + self.avatar,
+            'timestamp': self.timestamp
         }
 
 @login_manager.user_loader

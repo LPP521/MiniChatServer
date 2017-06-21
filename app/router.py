@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify, current_app
 from models import db, User, Friend, VerifyCode
 from flask_login import login_required
 from flask_login import login_user, logout_user, current_user
-import myemail
+import myemail, datetime
 
 main = Blueprint('main', __name__)
 verify_Code = []
@@ -30,6 +30,7 @@ def regesiter():
     user.id = request.form['id']
     user.nickname = request.form['nickname']
     user.password = request.form['password']
+    user.timestamp = request.form.get('timestamp', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     db.session.add(user)
     db.session.commit()
     return jsonify({'code': 0, 'message': '注册成功'})
@@ -94,6 +95,9 @@ def updateUser():
         url = '%s/image/%s' % (current_app.static_folder, filename)
         current_user.avatar = filename
         avatar.save(url)
+    
+    timestamp = form.get('timestamp', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    current_user.timestamp = timestamp
 
     db.session.add(current_user)
     db.session.commit()
@@ -103,6 +107,14 @@ def updateUser():
 @login_required
 def getUserInfo():
     return jsonify({'code': 0, 'message': current_user.to_json()})
+
+@main.route('/getTimestamp/<id>')
+def getTimestamp():
+    user = User.query.filter_by(id=id).first()
+    if user:
+        return jsonify({'code': 0, 'message': user.timestamp})
+    else:
+        return jsonify({'code': 2, 'message': '账号不存在'})
 
 @main.route('/query/<id>')
 def queryById(id):
@@ -160,5 +172,9 @@ def queryTest():
 @main.route('/getFrineds')
 @login_required
 def getFrineds():
-    friends = User.query.filter(User.id.in_([f.other for f in current_user.friends])).all()
-    return jsonify({'code': 0, 'message': [f.to_json() for f in friends]})
+    # 返回每个好友的详细信息
+    # friends = User.query.filter(User.id.in_([f.other for f in current_user.friends])).all()
+    # return jsonify({'code': 0, 'message': [f.to_json() for f in friends]})
+
+    # 返回好友 id List
+    return jsonify({'code': 0, 'message': [f.other for f in current_user.friends]})
