@@ -53,6 +53,15 @@ def logout():
     logout_user()
     return jsonify({'code': 0, 'message': '登出成功'})
 
+@main.route('/verifyOldPassword', methods=['POST'])
+@login_required
+def verifyOldPassword():
+    old_password = request.form['password']
+    if current_user.verify_password(old_password):
+        return jsonify({'code': 0, 'message': '密码正确'})
+    else:
+        return jsonify({'code': 2, 'message': '密码错误'})
+
 
 @main.route('/updateUser', methods=['POST'])
 @login_required

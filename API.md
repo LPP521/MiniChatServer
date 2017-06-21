@@ -37,7 +37,7 @@ MiniChat 服务器的接口
         - signature：个性签名
         - avatar: 用户头像
 
-5. 获取用户信息（`"/getUserInfo", method="POST"`）, 只有已登录用户才能进行该操作
+5. 获取用户信息（`"/getUserInfo", method="GET"`）, 只有已登录用户才能进行该操作
     * 参数：无
     * 返回值
     ```
@@ -62,6 +62,8 @@ MiniChat 服务器的接口
         - id： 邮箱
         - code： 验证码
 
-7. 根据`id`查询用户（`"/query/<id>", method=["GET"]`）
+8. 根据`id`查询用户（`"/query/<id>", method=["GET"]`）
     * 参数： id（邮箱）
     
+9. 确定旧密码是否正确（`"/verifyOldPassword", method=["POST"]`）
+    * 参数： password (旧密码)
