@@ -23,10 +23,12 @@ secretKey = cp.get('xinge', 'secretKey')
 # 第一个参数是 accessId， 第二个是 secretKey
 xinge = xinge_push.XingeApp(accessId, secretKey)
 
-def sendMessage(reveiver, message):
+def sendMessage(reveiver, title, type, sender, message):
     msg = xinge_push.Message()
     msg.type = xinge_push.MESSAGE_TYPE_ANDROID_NOTIFICATION
-    msg.title = '微聊消息'
+    msg.title = title
+    msg.style = xinge_push.Style(0, 1, 1, 1, nId=1)
+    msg.custom = {"type": type, "sender": sender}
     msg.content = message
     # 发送给单个账号
     return xinge.PushSingleAccount(0, reveiver, msg)
@@ -183,8 +185,7 @@ def addRequest():
     friend = request.form['friend']
     findUser = User.query.filter_by(id=friend).first()
     if findUser:
-        # msg = {"sender": current_user.id, "message"}
-        code, msg = sendMessage(friend, current_user.nickname + "请求添加您为好友")
+        code, msg = sendMessage(friend, "好友申请", 1, current_user.id, current_user.nickname + "请求添加您为好友")
         if code:
             return jsonify({'code': code, 'message': '请求发送失败，请稍后重试'})
         else:
@@ -193,10 +194,13 @@ def addRequest():
         return jsonify({'code': 10, 'message': '添加的好友不存在'})
 
 
-@main.route('/friend/agreeRequest', methods=['POST'])
+@main.route('/friend/answer', methods=['POST'])
 @login_required
 def addFriend():
     friend = request.form['friend']
+    answer = request.form['answer']
+    if answer == "no":
+        sendMessage(friend, "拒绝申请", 3, current_user.id, current_user.nickname + "拒绝了您的好友请求")
     if friend == current_user.id:
         return jsonify({'code': 7, 'message': '不能和自己成为好友'})
     if current_user.friends.query.filter_by(other=friend).first():
@@ -204,7 +208,7 @@ def addFriend():
     user = User.query.filter_by(id=friend).first()   
     if user:
         current_user.add_friend(friend)
-        sendMessage(friend, current_user.nickname + "同意了您的好友请求")
+        sendMessage(friend, "好友申请", 2, current_user.id, current_user.nickname + "同意了您的好友请求")
         return jsonify({'code': 0, 'message': '成功添加好友'})
     else:
         return jsonify({'code': 9, 'message': '添加的好友不存在'})
@@ -218,3 +222,15 @@ def getFrineds():
 
     # 返回好友 id List
     return jsonify({'code': 0, 'message': [f.other for f in current_user.friends]})
+
+
+@main.route('/send', methods=["POST"])
+@login_required
+def send():
+    receiver = request.form['receiver']
+    message = request.form['message']
+    code, msg = sendMessage(receiver, "微聊消息", 0, current_user.id, message)
+    if code:
+        return jsonify({'code': code, 'message': '消息发送失败，请稍后重试'})
+    else:
+        return jsonify({'code': 0, 'message': '消息发送成功'})    
