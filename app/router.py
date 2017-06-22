@@ -128,6 +128,19 @@ def updateUser():
     db.session.commit()
     return jsonify({'code': 0, 'message': '修改成功'})
 
+@main.route('/resetPassword', method=['POST'])
+def resetPassword():
+    id = request.form['id']
+    password = request.form['password']
+    user = User.query.filter_by(id=id).first()
+    if not user:
+        return jsonify({'code': 2, 'message': '账号不存在'})
+    user.password = password
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({'code': 0, 'message': '密码重置成功'})
+
+
 @main.route('/getUserInfo', methods=['GET'])
 @login_required
 def getUserInfo():
@@ -213,7 +226,7 @@ def addFriend():
     else:
         return jsonify({'code': 9, 'message': '添加的好友不存在'})
 
-@main.route('/getFrineds')
+@main.route('/getFriends')
 @login_required
 def getFrineds():
     # 返回每个好友的详细信息

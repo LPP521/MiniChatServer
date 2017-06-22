@@ -19,6 +19,7 @@ MiniChat 服务器的接口
         - nickname： 昵称
         - password： 密码
         - code: 验证码
+        - timestamp: 时间戳
 
 2. 登录（`"/login", method="POST"`）
     * 参数
@@ -36,6 +37,7 @@ MiniChat 服务器的接口
         - city：地区
         - signature：个性签名
         - avatar: 用户头像
+        - timestamp: 时间戳
 
 5. 获取用户信息（`"/getUserInfo", method="GET"`）, 只有已登录用户才能进行该操作
     * 参数：无
@@ -49,7 +51,8 @@ MiniChat 服务器的接口
             id: "12345678910",
             nickname: "caitzh",
             sex: "未知",
-            signature: "什么都没留下"
+            signature: "什么都没留下",
+            timestamp: "2017-7-12 12:10:30"
         }
     }
     ```
@@ -64,6 +67,35 @@ MiniChat 服务器的接口
 
 8. 根据`id`查询用户（`"/query/<id>", method=["GET"]`）
     * 参数： id（邮箱）
+    * 返回值同 5
     
-9. 确定旧密码是否正确（`"/verifyOldPassword", method=["POST"]`）
+9. 确定旧密码是否正确（`"/verifyOldPassword", method=["POST"]`）, 只有已登录用户才能进行该操作
     * 参数： password (旧密码)
+
+10. 获取用户时间戳（`"/getTimestamp/<id>", method=["GET"]`）
+    * 参数： id（邮箱）
+
+11. 添加好友请求（`"'/friend/addRequest'", method=["POST"]`）, 只有已登录用户才能进行该操作
+    * 参数： friend(要添加的好友的id)
+
+12. 回应好友请求（`"/friend/answer", method=["POST"]`）, 只有已登录用户才能进行该操作
+    * 参数： 
+        - friend(要回应的好友的id)
+        - answer("yes"表示同意， "no"表示拒绝)
+
+13. 获取好友列表（`"/getFriends", method=["GET"]`）, 只有已登录用户才能进行该操作
+    * 参数：无
+    * 返回值
+    ```
+    {'code': 0, 'message': [id1, id2...]}
+    ```
+
+14. 发送聊天消息（`"/send", method=["POST"]`）, 只有已登录用户才能进行该操作
+    * 参数： 
+        - receiver: 接收者id
+        - message: 消息内容
+
+15. 重置密码（`"/resetPassword", method=["POST"]`）, 需先验证邮箱
+    * 参数：
+        - id: 邮箱
+        - password: 新密码
