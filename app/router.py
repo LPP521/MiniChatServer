@@ -1,5 +1,10 @@
 # coding=utf-8
-import json, re, random
+import sys
+import ConfigParser
+reload(sys)
+sys.setdefaultencoding('utf8')
+import json, re, random, xinge_push
+
 from flask import Blueprint, request, jsonify, current_app
 from models import db, User, Friend, VerifyCode
 from flask_login import login_required
@@ -8,6 +13,24 @@ import myemail, datetime
 
 main = Blueprint('main', __name__)
 verify_Code = []
+
+# 读取配置信息
+cp = ConfigParser.SafeConfigParser()
+cp.read('server.conf')
+accessId = cp.get('xinge', 'accessId')
+secretKey = cp.get('xinge', 'secretKey')
+#create XingeApp
+# 第一个参数是 accessId， 第二个是 secretKey
+xinge = xinge_push.XingeApp(accessId, secretKey)
+
+def sendMessage(reveiver, message):
+    msg = xinge_push.Message()
+    msg.type = xinge_push.MESSAGE_TYPE_ANDROID_NOTIFICATION
+    msg.title = '微聊消息'
+    msg.content = message
+    # 发送给单个账号
+    return xinge.PushSingleAccount(0, reveiver, msg)
+
 
 @main.route('/register', methods=['POST'])
 def regesiter():
@@ -154,17 +177,34 @@ def verifyCode():
         return jsonify({'code': 11, 'message': '验证码不正确'})
     return jsonify({'code': 0, 'message': '验证码正确'})
 
-@main.route('/addFriend', methods=['POST'])
+@main.route('/friend/addRequest')
 @login_required
-def queryTest():
+def addRequest():
+    friend = request.form['friend']
+    findUser = User.query.filter_by(id=friend).first()
+    if findUser:
+        # msg = {"sender": current_user.id, "message"}
+        code, msg = sendMessage(friend, current_user.nickname + "请求添加您为好友")
+        if code:
+            return jsonify({'code': code, 'message': '请求发送失败，请稍后重试'})
+        else:
+            return jsonify({'code': 0, 'message': '已发送好友请求，等候对方同意'})
+    else:
+        return jsonify({'code': 10, 'message': '添加的好友不存在'})
+
+
+@main.route('/friend/agreeRequest', methods=['POST'])
+@login_required
+def addFriend():
     friend = request.form['friend']
     if friend == current_user.id:
         return jsonify({'code': 7, 'message': '不能和自己成为好友'})
-    if Friend.query.filter_by(one=friend).first():
+    if current_user.friends.query.filter_by(other=friend).first():
         return jsonify({'code': 8, 'message': '不能重复添加好友'})
     user = User.query.filter_by(id=friend).first()   
     if user:
         current_user.add_friend(friend)
+        sendMessage(friend, current_user.nickname + "同意了您的好友请求")
         return jsonify({'code': 0, 'message': '成功添加好友'})
     else:
         return jsonify({'code': 9, 'message': '添加的好友不存在'})
