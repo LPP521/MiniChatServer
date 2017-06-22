@@ -128,7 +128,7 @@ def updateUser():
     db.session.commit()
     return jsonify({'code': 0, 'message': '修改成功'})
 
-@main.route('/resetPassword', method=['POST'])
+@main.route('/resetPassword', methods=['POST'])
 def resetPassword():
     id = request.form['id']
     password = request.form['password']
