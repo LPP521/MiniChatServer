@@ -196,6 +196,12 @@ def verifyCode():
 @login_required
 def addRequest():
     friend = request.form['friend']
+
+    if friend == current_user.id:
+        return jsonify({'code': 7, 'message': '不能和自己成为好友'})
+    if current_user.friends.filter_by(other=friend).first():
+        return jsonify({'code': 8, 'message': '不能重复添加好友'})
+
     findUser = User.query.filter_by(id=friend).first()
     if findUser:
         code, msg = sendMessage(friend, "好友申请", 1, current_user.id, current_user.nickname + "请求添加您为好友")
@@ -216,7 +222,7 @@ def addFriend():
         sendMessage(friend, "拒绝申请", 3, current_user.id, current_user.nickname + "拒绝了您的好友请求")
     if friend == current_user.id:
         return jsonify({'code': 7, 'message': '不能和自己成为好友'})
-    if current_user.friends.query.filter_by(other=friend).first():
+    if current_user.friends.filter_by(other=friend).first():
         return jsonify({'code': 8, 'message': '不能重复添加好友'})
     user = User.query.filter_by(id=friend).first()   
     if user:
