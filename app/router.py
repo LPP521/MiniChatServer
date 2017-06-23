@@ -12,7 +12,7 @@ from flask_login import login_user, logout_user, current_user
 import myemail, datetime
 
 main = Blueprint('main', __name__)
-verify_Code = []
+verify_Code = {}
 
 # 读取配置信息
 cp = ConfigParser.SafeConfigParser()
@@ -43,11 +43,13 @@ def regesiter():
 
     code = request.form['code']
     isCodeValid = False
-    for c in verify_Code:
-        if c.verify(email, code):
+    for id in verify_Code.keys():
+        if verify_Code[id].outOfDate():
+            verify_Code.pop(id)
+            continue
+        if id == email and verify_Code[id].verify(code):
             isCodeValid = True
-        elif c.outOfDate():
-            verify_Code.remove(c)
+
     if not isCodeValid:
         return jsonify({'code': 1, 'message': '验证码已失效'})
     
@@ -167,9 +169,9 @@ def sendVerifycode(id):
     if not re.match("[a-zA-Z0-9]+\@+[a-zA-Z0-9]+\.+[a-zA-Z]", id) != None:
         return jsonify({'code': 5, 'message': '邮箱格式非法'})
     code = random.randint(1000, 9999)
-    verify_Code.append(VerifyCode(id, str(code)))
     message = "[微聊]您的验证码是%s, 10分钟内有效。为了您的信息安全，请勿泄露验证码" %str(code)
     if myemail.send(id, message):
+        verify_Code[id] = VerifyCode(str(code))
         return jsonify({'code': 0, 'message': '验证码发送成功'})
     else:
         return jsonify({'code': 6, 'message': '发送失败，请稍后再试'})
@@ -183,11 +185,13 @@ def verifyCode():
 
     code = request.form['code']
     isCodeValid = False
-    for c in verify_Code:
-        if c.verify(email, code):
+    for id in verify_Code.keys():
+        if verify_Code[id].outOfDate():
+            verify_Code.pop(id)
+            continue
+        if id == email and verify_Code[id].verify(code):
             isCodeValid = True
-        elif c.outOfDate():
-            verify_Code.remove(c)
+
     if not isCodeValid:
         return jsonify({'code': 11, 'message': '验证码不正确'})
     return jsonify({'code': 0, 'message': '验证码正确'})

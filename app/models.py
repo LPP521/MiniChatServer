@@ -76,13 +76,12 @@ class Friend(db.Model):
 
 # 验证码
 class VerifyCode(object):
-    def __init__(self, email, code):
-        self.email = email
+    def __init__(self, code):
         self.time = time.time()
         self.code = code
 
-    def verify(self, email, code):
-        if code == self.code and email == self.email and not self.outOfDate():
+    def verify(self, code):
+        if code == self.code and not self.outOfDate():
             return True
         else:
             return False
