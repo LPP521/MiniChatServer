@@ -28,7 +28,7 @@ def sendMessage(reveiver, title, type, sender, message):
     msg.type = xinge_push.MESSAGE_TYPE_ANDROID_NOTIFICATION
     msg.title = title
     msg.style = xinge_push.Style(0, 1, 1, 1, nId=1)
-    msg.custom = {"type": type, "sender": sender}
+    msg.custom = {"type": type, "sender": sender, "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
     msg.content = message
     # 发送给单个账号
     return xinge.PushSingleAccount(0, reveiver, msg)
