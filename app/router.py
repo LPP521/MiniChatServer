@@ -69,7 +69,7 @@ def login():
     user = User.query.filter_by(id=id).first()
     if user and user.verify_password(password):
         login_user(user)
-        return jsonify({'code': 0, 'message': '登录成功'})
+        return jsonify({'code': 0, 'message': current_user.to_json()})
     elif user:
         return jsonify({'code': 2, 'message': '密码错误'})
     else:
