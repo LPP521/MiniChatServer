@@ -117,6 +117,9 @@ def updateUser():
 
     avatar = request.files.get('avatar', None)
     if avatar:
+        size = (40, 40)
+        im = Image.open(file)
+        im.thumbnail(size)
         filename = avatar.filename
         filename = "%s%s" % (current_user.id, filename[filename.rindex('.'):])
         url = '%s/image/%s' % (current_app.static_folder, filename)
@@ -149,7 +152,7 @@ def getUserInfo():
     return jsonify({'code': 0, 'message': current_user.to_json()})
 
 @main.route('/getTimestamp/<id>')
-def getTimestamp():
+def getTimestamp(id):
     user = User.query.filter_by(id=id).first()
     if user:
         return jsonify({'code': 0, 'message': user.timestamp})
