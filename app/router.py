@@ -199,7 +199,7 @@ def verifyCode():
         return jsonify({'code': 11, 'message': '验证码不正确'})
     return jsonify({'code': 0, 'message': '验证码正确'})
 
-@main.route('/friend/addRequest')
+@main.route('/friend/addRequest', methods=['POST'])
 @login_required
 def addRequest():
     friend = request.form['friend']
