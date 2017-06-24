@@ -246,6 +246,18 @@ def getFrineds():
     # 返回好友 id List
     return jsonify({'code': 0, 'message': [f.other for f in current_user.friends]})
 
+@main.route('/isFriend', methods=["POST"])
+@login_required
+def isFriend():
+    friend = request.form['friend']
+    user = User.query.filter_by(id=friend).first()
+    if not user:
+        return jsonify({'code': 4, 'message': '该用户不存在'})
+    if current_user.friends.filter_by(other=friend).first():
+        return jsonify({'code': 0, 'message': 'yes'})
+    else:
+        return jsonify({'code': 0, 'message': 'no'})
+
 
 @main.route('/send', methods=["POST"])
 @login_required

@@ -99,3 +99,6 @@ MiniChat 服务器的接口
     * 参数：
         - id: 邮箱
         - password: 新密码
+
+16. 查询某个用户是否是好友（`"/isFriend", method=["POST"]`）, 只有已登录用户才能进行该操作
+    * 参数：friend (要查询的用户id)
