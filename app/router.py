@@ -117,9 +117,6 @@ def updateUser():
 
     avatar = request.files.get('avatar', None)
     if avatar:
-        size = (40, 40)
-        im = Image.open(file)
-        im.thumbnail(size)
         filename = avatar.filename
         filename = "%s%s" % (current_user.id, filename[filename.rindex('.'):])
         url = '%s/image/%s' % (current_app.static_folder, filename)
