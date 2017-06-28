@@ -224,6 +224,7 @@ def addFriend():
     answer = request.form['answer']
     if answer == "no":
         sendMessage(friend, "拒绝申请", 3, current_user.id, current_user.nickname + "拒绝了您的好友请求")
+        return jsonify({'code': 0, 'message': '发送成功'})
     if friend == current_user.id:
         return jsonify({'code': 7, 'message': '不能和自己成为好友'})
     if current_user.friends.filter_by(other=friend).first():
