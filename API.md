@@ -102,3 +102,6 @@ MiniChat 服务器的接口
 
 16. 查询某个用户是否是好友（`"/isFriend", method=["POST"]`）, 只有已登录用户才能进行该操作
     * 参数：friend (要查询的用户id)
+
+17. 删除好友（`"friend/delete", method=["POST"]`）, 只有已登录用户才能进行该操作
+    * 参数： friend （要删除的好友id）
