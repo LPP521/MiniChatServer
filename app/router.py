@@ -264,7 +264,7 @@ def isFriend():
 def send():
     receiver = request.form['receiver']
     message = request.form['message']
-    friend = current_user.friends.filter_by(other=friend).first()
+    friend = current_user.friends.filter_by(other=receiver).first()
     if not friend:
         return jsonify({'code': 13, 'message': '非好友不能发送消息'})    
     code, msg = sendMessage(receiver, "微聊消息", 0, current_user.id, message)
