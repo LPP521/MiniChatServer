@@ -264,8 +264,25 @@ def isFriend():
 def send():
     receiver = request.form['receiver']
     message = request.form['message']
+    friend = current_user.friends.filter_by(other=friend).first()
+    if not friend:
+        return jsonify({'code': 13, 'message': '非好友不能发送消息'})    
     code, msg = sendMessage(receiver, "微聊消息", 0, current_user.id, message)
     if code:
         return jsonify({'code': code, 'message': '消息发送失败，请稍后重试'})
     else:
         return jsonify({'code': 0, 'message': '消息发送成功'})    
+
+@main.route('/friend/delete', methods=["POST"])
+@login_required
+def deleteFriend():
+    friend = request.form['friend']
+    user = User.query.filter_by(id=friend).first()
+    f = current_user.friends.filter_by(other=friend).first()
+    if f:
+        db.session.delete(f)
+        f_inverse = user.friends.filter_by(other=current_user.id).first()
+        db.session.delete(f_inverse)
+        return jsonify({'code': 0, 'message': '删除成功'})
+    else:
+        return jsonify({'code': 13, 'message': '非好友关系不能删除'})    
