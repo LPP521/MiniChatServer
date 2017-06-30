@@ -109,7 +109,8 @@ def login():
 @main.route('/logout')
 @login_required
 def logout():
-    LoginUser.remove(current_user)
+    if current_user in LoginUser:
+        LoginUser.remove(current_user)
     logout_user()
     return jsonify({'code': 0, 'message': '登出成功'})
 
