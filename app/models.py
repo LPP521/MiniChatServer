@@ -9,7 +9,7 @@ import time, datetime
 db = SQLAlchemy(use_native_unicode="utf8")
 
 login_manager = LoginManager()
-login_manager.session_protection = 'strong'
+login_manager.session_protection = None # 用户会话保护
 login_manager.login_view = 'router'
 
 class User(UserMixin, db.Model):
