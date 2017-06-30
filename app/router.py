@@ -17,6 +17,7 @@ main = Blueprint('main', __name__)
 verify_Code = {}
 LoginUser = []
 unsendMessage = []
+admin = "1234"
 
 # 读取配置信息
 cp = ConfigParser.SafeConfigParser()
@@ -51,7 +52,7 @@ def resendMessage():
         time.sleep(5)
         for msg in unsendMessage:
             user = User.query.filter_by(id=msg['receiver']).first()
-            print 'trying to resend message to', msg['receiver'], "..."
+            # print 'trying to resend message to', msg['receiver'], "..."
             if user and (user in LoginUser):
                 code, msg = xinge.PushSingleAccount(0, msg['receiver'], msg)
                 if not code:
@@ -251,7 +252,7 @@ def addFriend():
     friend = request.form['friend']
     answer = request.form['answer']
     if answer == "no":
-        sendMessage(friend, "拒绝申请", 3, current_user.id, current_user.nickname + "拒绝了您的好友请求")
+        sendMessage(friend, "拒绝申请", 0, admin, current_user.nickname + "拒绝了您的好友请求")
         return jsonify({'code': 0, 'message': '发送成功'})
     if friend == current_user.id:
         return jsonify({'code': 7, 'message': '不能和自己成为好友'})
@@ -260,7 +261,7 @@ def addFriend():
     user = User.query.filter_by(id=friend).first()   
     if user:
         current_user.add_friend(friend)
-        sendMessage(friend, "好友申请", 2, current_user.id, current_user.nickname + "同意了您的好友请求")
+        sendMessage(friend, "好友申请", 0, current_user.id, "我同意了您的好友请求，我们可以开始聊天了")
         return jsonify({'code': 0, 'message': '成功添加好友'})
     else:
         return jsonify({'code': 9, 'message': '添加的好友不存在'})
