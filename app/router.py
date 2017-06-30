@@ -54,7 +54,7 @@ def resendMessage():
             user = User.query.filter_by(id=msg['receiver']).first()
             # print 'trying to resend message to', msg['receiver'], "..."
             if user and (user.id in LoginUser):
-                code, msg = xinge.PushSingleAccount(0, msg['receiver'], msg)
+                code, error = xinge.PushSingleAccount(0, msg['receiver'], msg['message'])
                 if not code:
                     unsendMessage.remove(msg)
 
