@@ -4,6 +4,8 @@ import ConfigParser
 reload(sys)
 sys.setdefaultencoding('utf8')
 import json, re, random, xinge_push
+import thread
+import time
 
 from flask import Blueprint, request, jsonify, current_app
 from models import db, User, Friend, VerifyCode
@@ -13,6 +15,8 @@ import myemail, datetime
 
 main = Blueprint('main', __name__)
 verify_Code = {}
+LoginUser = []
+unsendMessage = []
 
 # 读取配置信息
 cp = ConfigParser.SafeConfigParser()
@@ -23,22 +27,41 @@ secretKey = cp.get('xinge', 'secretKey')
 # 第一个参数是 accessId， 第二个是 secretKey
 xinge = xinge_push.XingeApp(accessId, secretKey)
 
-def sendMessage(reveiver, title, type, sender, message):
+def buildMessage(title, type, sender, message):
     msg = xinge_push.Message()
     msg.type = xinge_push.MESSAGE_TYPE_ANDROID_NOTIFICATION
     msg.title = title
     msg.style = xinge_push.Style(0, 1, 1, 1, nId=1)
     msg.custom = {"type": type, "sender": sender, "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
     msg.content = message
-    # action = xinge_push.ClickAction()
-    # if type == 1:
-    #     action.activity = "com.example.caitzh.minichat.AddFriendActivity"
-    # else:
-    #     action.activity = "com.example.caitzh.minichat.crh.chatWindow"
-    # msg.action = action
-    # 发送给单个账号
-    return xinge.PushSingleAccount(0, reveiver, msg)
+    return msg
 
+def sendMessage(receiver, title, type, sender, message):
+    msg = buildMessage(title, type, sender, message)
+    user = User.query.filter_by(id=receiver).first()
+    if user in LoginUser:
+        code, msg = xinge.PushSingleAccount(0, receiver, msg)
+        if code:
+            unsendMessage.append({'receiver': receiver, "message": msg})
+    else:
+        unsendMessage.append({'receiver': receiver, "message": msg})
+
+def resendMessage():
+    while True:
+        time.sleep(5)
+        for msg in unsendMessage:
+            user = User.query.filter_by(id=msg['receiver']).first()
+            print 'trying to resend message to', msg['receiver'], "..."
+            if user and (user in LoginUser):
+                code, msg = xinge.PushSingleAccount(0, msg['receiver'], msg)
+                if not code:
+                    unsendMessage.remove(msg)
+
+try:
+    thread.start_new_thread(resendMessage, ())
+except Exception, e:
+    print str(e)
+    print "Error: unable to start thread"
 
 @main.route('/register', methods=['POST'])
 def regesiter():
@@ -75,6 +98,7 @@ def login():
     user = User.query.filter_by(id=id).first()
     if user and user.verify_password(password):
         login_user(user)
+        LoginUser.append(user)
         return jsonify({'code': 0, 'message': current_user.to_json()})
     elif user:
         return jsonify({'code': 2, 'message': '密码错误'})
@@ -84,6 +108,7 @@ def login():
 @main.route('/logout')
 @login_required
 def logout():
+    LoginUser.remove(current_user)
     logout_user()
     return jsonify({'code': 0, 'message': '登出成功'})
 
@@ -214,11 +239,8 @@ def addRequest():
 
     findUser = User.query.filter_by(id=friend).first()
     if findUser:
-        code, msg = sendMessage(friend, "好友申请", 1, current_user.id, current_user.nickname + "请求添加您为好友")
-        if code:
-            return jsonify({'code': code, 'message': '请求发送失败，请稍后重试'})
-        else:
-            return jsonify({'code': 0, 'message': '已发送好友请求，等候对方同意'})
+        sendMessage(friend, "好友申请", 1, current_user.id, current_user.nickname + "请求添加您为好友")
+        return jsonify({'code': 0, 'message': '已发送好友请求，等候对方同意'})
     else:
         return jsonify({'code': 10, 'message': '添加的好友不存在'})
 
@@ -273,12 +295,9 @@ def send():
     message = request.form['message']
     friend = current_user.friends.filter_by(other=receiver).first()
     if not friend:
-        return jsonify({'code': 13, 'message': '非好友不能发送消息'})    
-    code, msg = sendMessage(receiver, "微聊消息", 0, current_user.id, message)
-    if code:
-        return jsonify({'code': code, 'message': '消息发送失败，请稍后重试'})
-    else:
-        return jsonify({'code': 0, 'message': '消息发送成功'})    
+        return jsonify({'code': 13, 'message': '非好友不能发送消息'})  
+    sendMessage(receiver, "微聊消息", 0, current_user.id, message)
+    return jsonify({'code': 0, 'message': '消息发送成功'})    
 
 @main.route('/friend/delete', methods=["POST"])
 @login_required
