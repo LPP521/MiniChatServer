@@ -40,7 +40,7 @@ def buildMessage(title, type, sender, message):
 def sendMessage(receiver, title, type, sender, message):
     msg = buildMessage(title, type, sender, message)
     user = User.query.filter_by(id=receiver).first()
-    if user in LoginUser:
+    if user.id in LoginUser:
         code, msg = xinge.PushSingleAccount(0, receiver, msg)
         if code:
             unsendMessage.append({'receiver': receiver, "message": msg})
@@ -53,7 +53,7 @@ def resendMessage():
         for msg in unsendMessage:
             user = User.query.filter_by(id=msg['receiver']).first()
             # print 'trying to resend message to', msg['receiver'], "..."
-            if user and (user in LoginUser):
+            if user and (user.id in LoginUser):
                 code, msg = xinge.PushSingleAccount(0, msg['receiver'], msg)
                 if not code:
                     unsendMessage.remove(msg)
@@ -99,7 +99,7 @@ def login():
     user = User.query.filter_by(id=id).first()
     if user and user.verify_password(password):
         login_user(user)
-        LoginUser.append(user)
+        LoginUser.append(user.id)
         return jsonify({'code': 0, 'message': current_user.to_json()})
     elif user:
         return jsonify({'code': 2, 'message': '密码错误'})
@@ -109,8 +109,8 @@ def login():
 @main.route('/logout')
 @login_required
 def logout():
-    if current_user in LoginUser:
-        LoginUser.remove(current_user)
+    if current_user.id in LoginUser:
+        LoginUser.remove(current_user.id)
     logout_user()
     return jsonify({'code': 0, 'message': '登出成功'})
 
