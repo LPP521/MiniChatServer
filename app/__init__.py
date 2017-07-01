@@ -1,13 +1,18 @@
 from flask import Flask
 from flask import request
 from router import main
-
+import ConfigParser
 from models import db, User, login_manager
 
 def create_app():
     app = Flask(__name__)
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:ctz1995429ctz@127.0.0.1/MiniChat?charset=utf8'
+    # 读取配置信息
+	cp = ConfigParser.SafeConfigParser()
+	cp.read('server.conf')
+	database = cp.get('mysql', 'databaseUrl')
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = database
     app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
     app.register_blueprint(main)
     db.app = app
