@@ -17,13 +17,13 @@ main = Blueprint('main', __name__)
 verify_Code = {}
 LoginUser = []
 unsendMessage = []
-admin = "1234"
 
 # 读取配置信息
 cp = ConfigParser.SafeConfigParser()
 cp.read('server.conf')
 accessId = cp.get('xinge', 'accessId')
 secretKey = cp.get('xinge', 'secretKey')
+admin = cp.get('minichat', 'admin')
 #create XingeApp
 # 第一个参数是 accessId， 第二个是 secretKey
 xinge = xinge_push.XingeApp(accessId, secretKey)
@@ -47,6 +47,7 @@ def sendMessage(receiver, title, type, sender, message):
     msg = buildMessage(title, type, sender, message)
     user = User.query.filter_by(id=receiver).first()
     if user.id in LoginUser:
+        time.sleep(1.5)
         code, error = xinge.PushSingleAccount(0, receiver, msg)
         if code:
             unsendMessage.append({'receiver': receiver, "message": msg})
@@ -55,12 +56,12 @@ def sendMessage(receiver, title, type, sender, message):
 
 def resendMessage():
     while True:
-        time.sleep(5)
+        time.sleep(3)
         for msg in unsendMessage:
             user = User.query.filter_by(id=msg['receiver']).first()
             # print 'trying to resend message to', msg['receiver'], "..."
             if user and (user.id in LoginUser):
-                time.sleep(8)
+                time.sleep(10)
                 code, error = xinge.PushSingleAccount(0, msg['receiver'], msg['message'])
                 if not code:
                     unsendMessage.remove(msg)
