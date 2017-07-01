@@ -7,10 +7,10 @@ from models import db, User, login_manager
 
 def create_app():
     app = Flask(__name__)
-    
-	cp = ConfigParser.SafeConfigParser()
-	cp.read('server.conf')
-	database = cp.get('mysql', 'databaseUrl')
+
+    cp = ConfigParser.SafeConfigParser()
+    cp.read('server.conf')
+    database = cp.get('mysql', 'databaseUrl')
 
     app.config['SQLALCHEMY_DATABASE_URI'] = database
     app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
