@@ -35,13 +35,18 @@ def buildMessage(title, type, sender, message):
     msg.style = xinge_push.Style(0, 1, 1, 1, nId=1)
     msg.custom = {"type": type, "sender": sender, "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
     msg.content = message
+    action = xinge_push.ClickAction()
+    if type == 0:
+        action.activity = "com.example.caitzh.minichat.Chat.chatWindow"
+    else:
+        action.activity = "com.example.caitzh.minichat.Friends.friendsList"
+    msg.action = action
     return msg
 
 def sendMessage(receiver, title, type, sender, message):
     msg = buildMessage(title, type, sender, message)
     user = User.query.filter_by(id=receiver).first()
     if user.id in LoginUser:
-        time.sleep(2)
         code, error = xinge.PushSingleAccount(0, receiver, msg)
         if code:
             unsendMessage.append({'receiver': receiver, "message": msg})
@@ -55,7 +60,7 @@ def resendMessage():
             user = User.query.filter_by(id=msg['receiver']).first()
             # print 'trying to resend message to', msg['receiver'], "..."
             if user and (user.id in LoginUser):
-                time.sleep(5)
+                time.sleep(8)
                 code, error = xinge.PushSingleAccount(0, msg['receiver'], msg['message'])
                 if not code:
                     unsendMessage.remove(msg)
