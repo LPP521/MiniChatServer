@@ -7,8 +7,7 @@ from models import db, User, login_manager
 
 def create_app():
     app = Flask(__name__)
-
-    # 读取配置信息
+    
 	cp = ConfigParser.SafeConfigParser()
 	cp.read('server.conf')
 	database = cp.get('mysql', 'databaseUrl')
